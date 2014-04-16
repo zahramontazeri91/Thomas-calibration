@@ -35,7 +35,7 @@ int main( int argc, char** argv )
                     double rad = (degree / 180.0) * PI;
                     int r = int(x * cos(rad) + y * sin(rad));
                     votes.at<int>(degree,r)= (0,0,value);
-                    value=value+0.001;
+                    value=value+1;
                 }
             }
         }
