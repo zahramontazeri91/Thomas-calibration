@@ -28,13 +28,13 @@ int main( int argc, char** argv )
     
     for (int x = 0; x < l; x++) {
         for (int y = 0; y < w; y++) {
-            if (edge.at<int>(x, y) > 200) {
+            if (edge.at<uchar>(x, y) > 200) {
                 //int intensity = edge.at<int>(x, y);
                 for(degree = 0; degree < 270; degree++){
                     // int deg = degree - 90;
                     double rad = (degree / 180.0) * PI;
                     int r = int(x * cos(rad) + y * sin(rad));
-                    votes.at<int>(degree,r)= (0,0,value);
+                    votes.at<uchar>(degree,r)= (0,0,value);
                     value=value+1;
                 }
             }
