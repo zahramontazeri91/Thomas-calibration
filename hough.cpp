@@ -51,6 +51,6 @@ int main()
 	Mat image;
 	image = imread("index.jpeg");
 	Mat img;
-	img=hough_transform(image);
+	hough_image=hough_transform(image);
 	return 0;
 }
