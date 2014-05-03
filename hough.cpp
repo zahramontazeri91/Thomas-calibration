@@ -7,49 +7,50 @@
 using namespace cv;
 using namespace std;
 
-int main( int argc, char** argv )
+Mat hough_transform (Mat image)
 {
-	Mat image;
-	image = imread("images.jpeg");
+
 	Mat grey;
 	cvtColor(image, grey, CV_RGB2GRAY);
 	Mat edge;
 	Sobel(grey, edge, CV_8U, 1, 0);
-    
+	//calcute R_MAX:
 	int R = int(sqrt(double(edge.cols * edge.cols + edge.rows * edge.rows)));
-	Mat votes = Mat::zeros( 270, R, CV_8UC3 );
-	cv::Size s = edge.size();
+	Mat hough_image = Mat::zeros( 270, R , CV_8UC1 );
+	Mat votes = Mat::zeros(270, R, CV_32FC1 );
+
+	cv::Size s = edge.size();	//size of original image
 	int l = s.height;
 	int w = s.width;
-    
-   
+
     int degree;
-    double value=1;
-    
-    for (int x = 0; x < l; x++) {
-        for (int y = 0; y < w; y++) {
-            if (edge.at<uchar>(x, y) > 200) {
-                //int intensity = edge.at<int>(x, y);
+    float value=0;
+    for (int y = 0; y < l; y++) {
+        for (int x = 0; x < w; x++) {
+            if (edge.at<char>(x, y) > 10) {
                 for(degree = 0; degree < 270; degree++){
-                    // int deg = degree - 90;
-                    double rad = (degree / 180.0) * PI;
+                	//here is the problem: degree range should be bound [-90,180]
+                    float rad = ((degree) / 180.0) * PI;
                     int r = int(x * cos(rad) + y * sin(rad));
-                    votes.at<uchar>(degree,r)= (0,0,value);
-                    value=value+1;
+                    value = votes.at<float>(degree,r) += 20;
+                    votes.at<float>(degree,r)= value;
                 }
             }
         }
     }
-    
-    if( argc != 2 || !image.data )
-    {
-        printf( "No image data \n" );
-        return -1;
-    }
-    
-    namedWindow( "Display Image", CV_WINDOW_AUTOSIZE );
-    imshow( "Display Image", votes );
-    
-    waitKey(0);
-    return 0;
+
+    convertScaleAbs(votes, hough_image, 1, 0);
+    imshow( "hough transform", hough_image);
+
+waitKey(0);
+return hough_image;
+}
+
+int main()
+{
+	Mat image;
+	image = imread("index.jpeg");
+	Mat img;
+	img=hough_transform(image);
+	return 0;
 }
