@@ -89,9 +89,10 @@ Mat spatialized_hough (Mat edge, int seg)
 		}
 	}
 
-	//cast votes matrix to 8u to show it as an image
-	convertScaleAbs(votes, spatialized_image, 1, 0);
-	imshow( "spatialized hough transform",spatialized_image);
+	//cast votes matrix to 8u so we can show it as an image
+	//**** here is the next problem!****
+	//convertScaleAbs(votes, spatialized_image, 1, 0);
+	imshow( "spatialized hough transform",votes);
 
 	waitKey(0);
 	return spatialized_image;
