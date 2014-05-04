@@ -107,19 +107,10 @@ int main()
 	Mat edge;
 	Sobel(grey, edge, CV_8U, 1, 0);
 	Mat hough_image;
-	//hough_image=hough_transform(edge);
+	hough_image=hough_transform(edge);
 
 	Mat spatialized_hough_image;
 	spatialized_hough_image=spatialized_hough(edge,2);
-	int i=1;
-
-	Mat L = Mat::zeros( 2,3 , CV_8UC(i) );
-	L.at<Vec3b>(1,1)[1]=300;
-	cout<<L.at<Vec3f>(1,1)[1]<<endl;
-	//	Mat M(1, 3, CV_32SC(i));
-	//	M.at<Vec3d>(0,0)[1]=44;
-	//	cout <<M<<endl<< M.at<Vec3d>(0,0)[1] << endl;  // This works
-
 
 	return 0;
 }
