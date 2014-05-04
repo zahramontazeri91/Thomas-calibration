@@ -55,10 +55,12 @@ Mat spatialized_hough (Mat edge, int seg)
 	//calcute R_MAX:
 	int R = int(sqrt(double(edge.cols * edge.cols + edge.rows * edge.rows)));
 
-		Mat spatialized_image1 = Mat::zeros( 270, R , CV_8UC1 );
-		Mat spatialized_image2 = Mat::zeros( 270, R , CV_8UC1 );
-		Mat votes1 = Mat::zeros(270, R, CV_32FC1 );
-		Mat votes2 = Mat::zeros(270, R, CV_32FC1 );
+	Mat spatialized_image = Mat::zeros( 270, R , CV_8UC1 );
+
+	Mat spatialized_image1 = Mat::zeros( 270, R , CV_8UC1 );
+	Mat spatialized_image2 = Mat::zeros( 270, R , CV_8UC1 );
+	Mat votes1 = Mat::zeros(270, R, CV_32FC1 );
+	Mat votes2 = Mat::zeros(270, R, CV_32FC1 );
 
 
 	cv::Size s = edge.size();	//size of original image
@@ -96,8 +98,12 @@ Mat spatialized_hough (Mat edge, int seg)
     }
 
     //cast votes matrix to 8u to show it as an image
+    convertScaleAbs(votes1, spatialized_image1, 1, 0);
     convertScaleAbs(votes2, spatialized_image2, 1, 0);
-    imshow( "hough transform",spatialized_image2);
+
+    spatialized_image = spatialized_image2 + spatialized_image1;
+    imshow( "hough transform",spatialized_image);
+
 
 
 
@@ -114,7 +120,7 @@ int main()
 	Mat edge;
 	Sobel(grey, edge, CV_8U, 1, 0);
 	Mat hough_image;
-	//hough_image=hough_transform(edge);
+	hough_image=hough_transform(edge);
 
 	Mat spatialized_hough_image;
 	spatialized_hough_image=spatialized_hough(edge,3);
