@@ -56,7 +56,8 @@ Mat spatialized_hough (Mat edge, int seg)
 	int R = int(sqrt(double(edge.cols * edge.cols + edge.rows * edge.rows)));
 
 	Mat spatialized_image = Mat::zeros( 270, R , CV_8UC(seg) );
-	Mat votes = Mat::zeros(270, R, CV_32FC(seg) );
+	Mat votes = Mat::zeros(270, R, CV_32FC(seg));
+	Mat votes_fore = Mat::zeros(270, R, CV_32FC1);
 
 
 	cv::Size s = edge.size();	//size of original image
@@ -71,18 +72,26 @@ Mat spatialized_hough (Mat edge, int seg)
 		for (int x = 0; x < l; x++) {
 			if (edge.at<char>(x, y) > 10) {
 				for(degree = 0; degree < 270; degree++){
+					int deg = degree - 90;
 					//here is the problem: degree range should be bound in [-90,180] but it will terminate if I change its interval;
 					float rad = ((degree) / 180.0) * PI;
-					int r = int(x * cos(rad) + y * sin(rad));
+					int r = int(y * cos(rad) + x * sin(rad));
 
 					if((rad>_3pi_4 && rad<_pi_4) || (rad>__pi_4 && rad<__3pi_4))
 					{
 						int ch=int(x/horizontal_subbin_width);
 						votes.at<Vec3f>(degree,r)[ch] +=20;
+						//in order to imshow the image effected of each channel, we add them all in a new Matrix.
+						//if(ch==4)
+						//here we can see image of one channel
+						votes_fore.at<float>(degree,r) += votes.at<Vec3f>(degree,r)[ch];
 					}
-					else{
+					else
+					{
 						int ch=int(y/vertical_subbin_width);
-						votes.at<Vec3f>(degree,r)[ch] +=20;
+						votes.at<Vec3f>(degree,r)[ch] += 20;
+						//if(ch==4)
+						votes_fore.at<float>(degree,r) += votes.at<Vec3f>(degree,r)[ch];
 					}
 				}
 			}
@@ -91,11 +100,12 @@ Mat spatialized_hough (Mat edge, int seg)
 
 	//cast votes matrix to 8u so we can show it as an image
 	//**** here is the next problem!****
-	//convertScaleAbs(votes, spatialized_image, 1, 0);
-	imshow( "spatialized hough transform",votes);
+
+	convertScaleAbs(votes_fore, spatialized_image, 1, 0);
+	imshow( "spatialized hough transform",spatialized_image);
 
 	waitKey(0);
-	return spatialized_image;
+	return votes;
 }
 
 int main()
@@ -107,10 +117,19 @@ int main()
 	Mat edge;
 	Sobel(grey, edge, CV_8U, 1, 0);
 	Mat hough_image;
-	hough_image=hough_transform(edge);
+	//hough_image=hough_transform(edge);
 
 	Mat spatialized_hough_image;
-	spatialized_hough_image=spatialized_hough(edge,2);
+	spatialized_hough_image=spatialized_hough(edge,6);
+	int i=1;
+
+	Mat L = Mat::zeros( 2,3 , CV_32FC(i) );
+	L.at<Vec3f>(1,1)[1]=30;
+	cout<<L.at<Vec3f>(1,1)[1]<<endl;
+	//	Mat M(1, 3, CV_32SC(i));
+	//	M.at<Vec3d>(0,0)[1]=44;
+	//	cout <<M<<endl<< M.at<Vec3d>(0,0)[1] << endl;  // This works
+
 
 	return 0;
 }
