@@ -116,19 +116,57 @@ int main()
 	cvtColor(image, grey, CV_RGB2GRAY);
 	Mat edge;
 	Sobel(grey, edge, CV_8U, 1, 0);
+
 	Mat hough_image;
 	//hough_image=hough_transform(edge);
 
 	Mat spatialized_hough_image;
-	spatialized_hough_image=spatialized_hough(edge,6);
-	int i=1;
+	//spatialized_hough_image=spatialized_hough(edge,6);
 
-	Mat L = Mat::zeros( 2,3 , CV_32FC(i) );
-	L.at<Vec3f>(1,1)[1]=30;
-	cout<<L.at<Vec3f>(1,1)[1]<<endl;
-	//	Mat M(1, 3, CV_32SC(i));
-	//	M.at<Vec3d>(0,0)[1]=44;
-	//	cout <<M<<endl<< M.at<Vec3d>(0,0)[1] << endl;  // This works
+	//initialing lines:
+	Point pt1= Point(2,4);
+	Point pt2= Point(200,400);
+	line(imgage, Point pt1, Point pt2);
+
+	//creating poses:
+	int tilt, pan, f;
+	float tilt_r, pan_r;
+	Mat R = Mat::zeros(3,3,CV_32FC1);
+
+	for(tilt=-1; tilt<1; tilt++)
+		for(pan=-1; pan<1; pan++)
+			for(f=0; f<1; f+=0.5)   //i am not sure for the interval of focal lenght!
+			{
+				tilt_r = ((tilt) / 180.0) * PI;
+				pan_r = ((pan) / 180.0) * PI;
+
+				Mat X = (Mat_<double>(3,3) << 1, 0 , 0, 0, cos(pan_r), -1*sin(pan_r), 0, sin(pan_r), cos(pan_r));
+				Mat Y = (Mat_<double>(3,3) << cos(tilt_r), 0 , sin(tilt_r), 0, 1, 0, -1*sin(tilt_r), 0, cos(tilt_r));
+				Mat Z = (Mat_<double>(3,3) << 1, 0 , 0, 0, 1, 0, 0, 0, 1);  //there is no rolling
+					//cout << "C = " << endl << " " << X << endl << endl;
+				R = X * Y;
+				R = R * Z;
+				Mat t = (Mat_<double>(3,1) << 0,0,0);
+				Mat P = Mat::zeros(3,4,CV_32FC1);  //p is the projection matrix
+				cv::hconcat(R, t, P);
+				//point_iplane = focal_lenght * projection * point_3D
+				Mat point_iplane = Mat::zeros(3,1,CV_32FC1);
+				//here is the coordinate of the 3D point
+				Mat point_3D = (Mat_<double>(4,1) << 1, 20, 0, 1);
+				//int cx, cy; //I assumed cx=xy=0;
+				Mat A = (Mat_<double>(3,3) << f, 0, 20, 0, f, 65, 0, 0, 1);
+				point_iplane = A* P;
+				point_iplane = point_iplane * point_3D;
+				//normalizing corresponding point in image plane:
+				double w=point_iplane.at<double>(1,1);
+				cout<<point_iplane<<endl;
+				cout<<point_iplane.at<float>(-1,0)<<"   "<<point_iplane.at<float>(1,1)<<"   "<<endl;
+				Mat point_iplane_normalized = (Mat_<double>(2,1) << (point_iplane.at<double>(-1,0)/=w), (point_iplane.at<double>(0,0)/w));
+				cout<<point_iplane_normalized<<endl<<endl;
+
+
+
+			}
 
 
 	return 0;
